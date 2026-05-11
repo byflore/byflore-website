@@ -1015,30 +1015,27 @@ const emojis = ["💐","🌹","🌸","🌺","🎁","🎀","✨","💵","🍫","�
 
 // Fetch via Netlify Function (avoids CORS issue)
 async function fetchProducts() {
-  const url = `/.netlify/functions/products`;
+  const url = "/.netlify/functions/products";
   try {
     const res = await fetch(url);
     const data = await res.json();
-    if (!data.records) return fallbackProducts;
-    return data.records.map((r, i) => {
-      const f = r.fields;
-      const cat = String(f.category || 'fresh').toLowerCase();
-      const imgArr = f.image || [];
-      const imgUrl = imgArr.length ? imgArr[0].url : null;
+    if (!data.products) return fallbackProducts;
+    return data.products.filter(function(p){ return p.name; }).map(function(p, i) {
+      const cat = String(p.category || "fresh").toLowerCase();
       return {
-        id: r.id,
-        name: String(f.name || "Unnamed"),
-        nameEn: String(f.nameEn || ""),
+        id: p.id,
+        name: String(p.name || "Unnamed"),
+        nameEn: String(p.nameEn || ""),
         category: cat,
         categoryLabel: catLabels[cat] || cat,
-        tag: f.tag || null,
-        tagLabel: f.tag === "new" ? "New" : f.tag === "popular" ? "热门" : null,
-        price: String(f.price || "RM --"),
-        oldPrice: f.oldPrice ? String(f.oldPrice) : null,
-        desc: String(f.description || ""),
-        image: imgUrl,
+        tag: p.tag || null,
+        tagLabel: p.tag === "New" ? "New" : p.tag === "popular" ? "热门" : null,
+        price: String(p.price || "RM --"),
+        oldPrice: p.oldPrice ? String(p.oldPrice) : null,
+        desc: String(p.description || ""),
+        image: p.imageUrl || null,
         emoji: emojis[i % emojis.length],
-        waMsg: `Hi! I'm interested in ${f.name} (${f.price}). Can I place an order?`
+        waMsg: "Hi! I'm interested in " + p.name + " (" + p.price + "). Can I place an order?"
       };
     });
   } catch(e) {
