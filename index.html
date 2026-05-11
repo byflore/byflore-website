@@ -774,7 +774,57 @@ z-index: 90;
 transition: transform 0.3s ease;
 }
 
-.wa-float:hover { transform: scale(1.1); }
+.category-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 16px;
+}
+
+@media (max-width: 700px) {
+.category-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.cat-card {
+border-radius: 20px;
+padding: 32px 20px;
+text-align: center;
+cursor: pointer;
+border: 1.5px solid rgba(201,132,142,0.15);
+background: var(–white);
+transition: all 0.3s ease;
+box-shadow: 0 2px 12px rgba(42,34,32,0.04);
+}
+
+.cat-card:hover {
+transform: translateY(-6px);
+border-color: var(–rose);
+box-shadow: 0 16px 32px rgba(201,132,142,0.15);
+}
+
+.cat-icon { font-size: 40px; margin-bottom: 12px; }
+
+.cat-name {
+font-family: ‘Noto Serif SC’, serif;
+font-size: 15px;
+font-weight: 600;
+color: var(–charcoal);
+margin-bottom: 4px;
+}
+
+.cat-count {
+font-size: 11px;
+color: var(–muted);
+letter-spacing: 1px;
+}
+
+.cat-arrow {
+display: inline-block;
+margin-top: 12px;
+font-size: 11px;
+letter-spacing: 2px;
+text-transform: uppercase;
+color: var(–rose);
+}
 </style>
 
 </head>
@@ -842,37 +892,44 @@ transition: transform 0.3s ease;
   </div>
 </div>
 
-<!-- EDIT NOTICE -->
+<!-- LATEST 5 -->
 
-<div class="edit-notice" id="catalog">
-  💡 <div><strong>店主提示：</strong>你可以把这个 HTML 文件发给网页设计师，或者自己在代码中把产品名称、价格、描述和图片链接换成真实内容。图片只需替换 <code>src="你的图片链接"</code> 即可。</div>
-</div>
-
-<!-- FILTER -->
-
-<div class="filter-bar">
-  <span class="filter-label">Filter :</span>
-  <button class="filter-btn active" onclick="filterProducts('all', this)">全部 All</button>
-  <button class="filter-btn" onclick="filterProducts('fresh', this)">鲜花</button>
-  <button class="filter-btn" onclick="filterProducts('soap', this)">香皂花</button>
-  <button class="filter-btn" onclick="filterProducts('preserved', this)">永生花</button>
-  <button class="filter-btn" onclick="filterProducts('money', this)">钱花</button>
-  <button class="filter-btn" onclick="filterProducts('snack', this)">零食花</button>
-  <button class="filter-btn" onclick="filterProducts('opening', this)">开张花</button>
-  <button class="filter-btn" onclick="filterProducts('seasonal', this)">节日限定</button>
-</div>
-
-<!-- CATALOG -->
-
-<div class="catalog-section">
+<div class="catalog-section" id="catalog">
   <div class="section-header">
-    <h2>Our <em>Collection</em></h2>
-    <div class="item-count" id="itemCount">9 items</div>
+    <div>
+      <div class="section-label">NEW ARRIVALS</div>
+      <h2>最新 <em>花束</em></h2>
+    </div>
   </div>
+  <div class="product-grid" id="latestGrid"></div>
+</div>
 
-  <div class="product-grid" id="productGrid">
-    <!-- Products injected by JS -->
+<!-- CATEGORIES -->
+
+<div class="catalog-section" id="categoriesSection">
+  <div class="section-header">
+    <div>
+      <div class="section-label">BROWSE BY TYPE</div>
+      <h2>花束 <em>分类</em></h2>
+    </div>
   </div>
+  <div class="category-grid" id="categoryGrid"></div>
+</div>
+
+<!-- FILTERED PRODUCTS -->
+
+<div class="catalog-section" id="filteredSection" style="display:none;">
+  <div class="section-header">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button onclick="closeFilter()" style="background:var(--blush);border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;font-size:18px;color:var(--muted);flex-shrink:0;">←</button>
+      <div>
+        <div class="section-label" id="filteredLabel"></div>
+        <h2 id="filteredTitle" style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;"></h2>
+      </div>
+    </div>
+    <div class="item-count" id="itemCount"></div>
+  </div>
+  <div class="product-grid" id="productGrid"></div>
 </div>
 
 <!-- ABOUT -->
@@ -1131,25 +1188,24 @@ const fallbackProducts = [
 ];
 
 // ============================================================
-// RENDER PRODUCTS
+// RENDER FUNCTIONS
 // ============================================================
 let allProducts = [];
-let activeFilter = 'all';
 
-function renderProducts(filter) {
-  const grid = document.getElementById('productGrid');
-  const countEl = document.getElementById('itemCount');
-  const filtered = filter === 'all' ? allProducts : allProducts.filter(p => p.category === filter);
+const catConfig = {
+  fresh:     { label: "鲜花",   icon: "💐", en: "Fresh Flowers" },
+  soap:      { label: "香皂花", icon: "🌹", en: "Soap Rose" },
+  preserved: { label: "永生花", icon: "🌸", en: "Preserved Flowers" },
+  money:     { label: "钱花",   icon: "💵", en: "Money Bouquet" },
+  snack:     { label: "零食花", icon: "🍫", en: "Snack Bouquet" },
+  opening:   { label: "开张花", icon: "🌺", en: "Grand Opening" },
+  seasonal:  { label: "节日限定", icon: "✨", en: "Seasonal Special" }
+};
 
-  countEl.textContent = filtered.length + ' items';
-
-  if (filtered.length === 0) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);font-size:14px;">No products yet · 还没有产品</div>`;
-    return;
-  }
-
-  grid.innerHTML = filtered.map((p, i) => `
-    <div class="product-card ${i === 0 && filter === 'all' ? 'featured' : ''}"
+function productCardHTML(p, i, featured) {
+  featured = featured || false;
+  return `
+    <div class="product-card ${featured ? 'featured' : ''}"
          onclick="openModal('${p.id}')"
          style="animation-delay:${i * 0.07}s">
       <div class="card-image">
@@ -1163,46 +1219,75 @@ function renderProducts(filter) {
       <div class="card-body">
         <div class="card-category">${p.categoryLabel}</div>
         <div class="card-name">${p.name}</div>
-        <div class="card-desc">${(p.desc||'').substring(0, 55)}...</div>
+        <div class="card-desc">${String(p.desc||'').substring(0, 60)}...</div>
         <div class="card-footer">
           <div class="card-price">
             ${p.price}
             ${p.oldPrice ? `<span>${p.oldPrice}</span>` : ''}
           </div>
-          <span class="card-order">Order →</span>
+          <span class="card-order">View →</span>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
 }
 
-function filterProducts(filter, btn) {
-  activeFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderProducts(filter);
+function renderLatest() {
+  const grid = document.getElementById('latestGrid');
+  const latest = allProducts.slice(0, 5);
+  if (!latest.length) { grid.innerHTML = ''; return; }
+  grid.innerHTML = latest.map(function(p, i){ return productCardHTML(p, i, i === 0); }).join('');
 }
 
-// MODAL
+function renderCategories() {
+  const grid = document.getElementById('categoryGrid');
+  grid.innerHTML = Object.keys(catConfig).map(function(cat) {
+    const count = allProducts.filter(function(p){ return p.category === cat; }).length;
+    if (!count) return '';
+    const c = catConfig[cat];
+    return `<div class="cat-card" onclick="openCategory('${cat}')">
+      <div class="cat-icon">${c.icon}</div>
+      <div class="cat-name">${c.label}</div>
+      <div class="cat-count">${count} items</div>
+      <div class="cat-arrow">Browse →</div>
+    </div>`;
+  }).join('');
+}
+
+function openCategory(cat) {
+  const c = catConfig[cat] || { label: cat, icon: '🌸', en: cat };
+  const filtered = allProducts.filter(function(p){ return p.category === cat; });
+  document.getElementById('filteredLabel').textContent = c.en.toUpperCase();
+  document.getElementById('filteredTitle').innerHTML = c.icon + ' ' + c.label;
+  document.getElementById('itemCount').textContent = filtered.length + ' items';
+  document.getElementById('productGrid').innerHTML = filtered.map(function(p,i){ return productCardHTML(p,i,false); }).join('');
+  document.getElementById('filteredSection').style.display = 'block';
+  document.getElementById('categoriesSection').style.display = 'none';
+  document.getElementById('catalog').style.display = 'none';
+  document.getElementById('filteredSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeFilter() {
+  document.getElementById('filteredSection').style.display = 'none';
+  document.getElementById('categoriesSection').style.display = 'block';
+  document.getElementById('catalog').style.display = 'block';
+  document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' });
+}
+
 function openModal(id) {
-  const p = allProducts.find(x => x.id === id);
+  const p = allProducts.find(function(x){ return x.id === id; });
   if (!p) return;
-
   document.getElementById('modalCat').textContent = p.categoryLabel;
   document.getElementById('modalName').textContent = p.name;
   document.getElementById('modalDesc').textContent = p.desc;
   document.getElementById('modalPrice').textContent = p.price;
-
   const phEl = document.getElementById('modalPlaceholder');
   if (p.image) {
-    phEl.innerHTML = `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`;
+    phEl.innerHTML = '<img src="' + p.image + '" alt="' + p.name + '" style="width:100%;height:100%;object-fit:cover;">';
   } else {
-    phEl.innerHTML = `<span style="font-size:80px">${p.emoji}</span>`;
+    phEl.innerHTML = '<span style="font-size:80px">' + p.emoji + '</span>';
   }
-
-  const waLink = `https://wa.me/${WA_NUMBER_GLOBAL}?text=${encodeURIComponent(p.waMsg)}`;
+  const waLink = 'https://wa.me/' + WA_NUMBER_GLOBAL + '?text=' + encodeURIComponent(p.waMsg);
   document.getElementById('modalWa').href = waLink;
-
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1216,22 +1301,14 @@ function closeModalBtn() {
   document.body.style.overflow = '';
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBtn(); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModalBtn(); });
 
-
-
-
-
-// INIT — fetch from Airtable, fallback to demo data
 async function init() {
-  document.getElementById('productGrid').innerHTML = `
-    <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);">
-      <div style="font-size:32px;margin-bottom:12px;">🌸</div>
-      <div style="font-size:13px;letter-spacing:2px;">Loading blooms...</div>
-    </div>`;
+  document.getElementById('latestGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);"><div style="font-size:32px;margin-bottom:12px;">🌸</div><div style="font-size:13px;letter-spacing:2px;">Loading blooms...</div></div>';
   allProducts = await fetchProducts();
   if (!allProducts.length) allProducts = fallbackProducts;
-  renderProducts('all');
+  renderLatest();
+  renderCategories();
 }
 init();
 </script>
