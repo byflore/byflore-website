@@ -1001,13 +1001,14 @@ const WA_NUMBER_GLOBAL = "60123456789"; // ← 改成你的 WA 号码
 
 // Category label map
 const catLabels = {
-  fresh:     "鲜花",
-  soap:      "香皂花",
-  preserved: "永生花",
-  money:     "钱花",
-  snack:     "零食花",
-  opening:   "开张花",
-  seasonal:  "节日限定"
+  fresh:      "鲜花",
+  soap:       "香皂花",
+  preserved:  "永生花",
+  money:      "钱花",
+  snack:      "零食花",
+  opening:    "开张花",
+  decoration: "场地布置",
+  seasonal:   "节日限定"
 };
 
 const emojis = ["💐","🌹","🌸","🌺","🎁","🎀","✨","💵","🍫","🌼"];
@@ -1193,21 +1194,23 @@ const fallbackProducts = [
 let allProducts = [];
 
 const catConfig = {
-  fresh:     { label: "鲜花",   icon: "💐", en: "Fresh Flowers" },
-  soap:      { label: "香皂花", icon: "🌹", en: "Soap Rose" },
-  preserved: { label: "永生花", icon: "🌸", en: "Preserved Flowers" },
-  money:     { label: "钱花",   icon: "💵", en: "Money Bouquet" },
-  snack:     { label: "零食花", icon: "🍫", en: "Snack Bouquet" },
-  opening:   { label: "开张花", icon: "🌺", en: "Grand Opening" },
-  seasonal:  { label: "节日限定", icon: "✨", en: "Seasonal Special" }
+  fresh:      { label: "鲜花",    icon: "💐", en: "Fresh Flowers" },
+  preserved:  { label: "永生花",  icon: "🌸", en: "Preserved Flowers" },
+  soap:       { label: "香皂花",  icon: "🌹", en: "Soap Rose" },
+  snack:      { label: "零食花",  icon: "🍫", en: "Snack Bouquet" },
+  money:      { label: "钱花",    icon: "💵", en: "Money Bouquet" },
+  opening:    { label: "开张花",  icon: "🌺", en: "Grand Opening" },
+  decoration: { label: "场地布置", icon: "🎪", en: "Venue Decoration" },
+  seasonal:   { label: "节日限定", icon: "✨", en: "Seasonal Special" }
 };
 
 function productCardHTML(p, i, featured) {
   featured = featured || false;
+  const safeId = String(p.id).replace(/'/g, '');
   return `
     <div class="product-card ${featured ? 'featured' : ''}"
-         onclick="openModal('${p.id}')"
-         style="animation-delay:${i * 0.07}s">
+         data-id="${safeId}"
+         style="animation-delay:${i * 0.07}s;cursor:pointer;">
       <div class="card-image">
         ${p.image
           ? `<img src="${p.image}" alt="${p.name}" loading="lazy">`
@@ -1274,7 +1277,7 @@ function closeFilter() {
 }
 
 function openModal(id) {
-  const p = allProducts.find(function(x){ return x.id === id; });
+  const p = allProducts.find(function(x){ return String(x.id) === String(id); });
   if (!p) return;
   document.getElementById('modalCat').textContent = p.categoryLabel;
   document.getElementById('modalName').textContent = p.name;
@@ -1302,6 +1305,15 @@ function closeModalBtn() {
 }
 
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModalBtn(); });
+
+// Event delegation for product cards
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('.product-card[data-id]');
+  if (card) {
+    const id = card.getAttribute('data-id');
+    openModal(id);
+  }
+});
 
 async function init() {
   document.getElementById('latestGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);"><div style="font-size:32px;margin-bottom:12px;">🌸</div><div style="font-size:13px;letter-spacing:2px;">Loading blooms...</div></div>';
