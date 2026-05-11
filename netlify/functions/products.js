@@ -1,46 +1,39 @@
-const https = require(‘https’);
+const https = require(“https”);
 
-exports.handler = async function(event, context) {
-const AIRTABLE_TOKEN = “pate5XEuSM0tLC1vz.d80f1e0ea490adce86e675f8ae6c272b052b9ca320b060022343878da98eaefa”;
-const AIRTABLE_BASE  = “apphfGx38pLpWBELJ”;
-const AIRTABLE_TABLE = “tblpYsn8L3dLZ7Ete”;
+exports.handler = function(event, context, callback) {
+const token = “pate5XEuSM0tLC1vz.d80f1e0ea490adce86e675f8ae6c272b052b9ca320b060022343878da98eaefa”;
+const base = “apphfGx38pLpWBELJ”;
+const table = “tblpYsn8L3dLZ7Ete”;
 
-return new Promise((resolve) => {
 const options = {
-hostname: ‘api.airtable.com’,
-path: `/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}`,
-method: ‘GET’,
+hostname: “api.airtable.com”,
+path: “/v0/” + base + “/” + table,
+method: “GET”,
 headers: {
-‘Authorization’: `Bearer ${AIRTABLE_TOKEN}`,
-‘Content-Type’: ‘application/json’
+“Authorization”: “Bearer “ + token
 }
 };
 
-```
-const req = https.request(options, (res) => {
-  let data = '';
-  res.on('data', (chunk) => { data += chunk; });
-  res.on('end', () => {
-    resolve({
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json"
-      },
-      body: data
-    });
-  });
-});
+var body = “”;
 
-req.on('error', (e) => {
-  resolve({
-    statusCode: 500,
-    body: JSON.stringify({ error: e.message })
-  });
+https.request(options, function(res) {
+res.on(“data”, function(chunk) {
+body += chunk;
 });
-
-req.end();
-```
-
+res.on(“end”, function() {
+callback(null, {
+statusCode: 200,
+headers: {
+“Access-Control-Allow-Origin”: “*”,
+“Content-Type”: “application/json”
+},
+body: body
 });
+});
+}).on(“error”, function(err) {
+callback(null, {
+statusCode: 500,
+body: JSON.stringify({ error: err.message })
+});
+}).end();
 };
