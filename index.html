@@ -784,7 +784,7 @@ transition: transform 0.3s ease;
 
 <header>
   <div class="logo">
-    <img src="images/logo.png" alt="By Flore · Soft Blooms">
+    <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#2A2220;">By <em style="font-style:italic;color:#C9848E;">Flore</em> <span style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#7A6360;font-family:'DM Sans',sans-serif;display:block;margin-top:2px;">Soft Blooms</span></span>
   </div>
   <nav>
     <a href="#catalog">Catalog</a>
@@ -902,7 +902,7 @@ transition: transform 0.3s ease;
 <!-- FOOTER -->
 
 <footer>
-  <img src="images/logo.png" alt="By Flore" style="height:80px;width:auto;margin-bottom:16px;filter:brightness(0) invert(1) opacity(0.7);">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:#EDD5D8;font-style:italic;margin-bottom:8px;">By Flore</div>
   <p>KL / JB · Order via WhatsApp · <a href="https://wa.me/60123456789">+60 12-345 6789</a></p>
   <div class="footer-links">
     <a href="#">Instagram</a>
@@ -938,11 +938,8 @@ transition: transform 0.3s ease;
 
 <script>
 // ============================================================
-// 🌸 AIRTABLE 配置
+// 🌸 AIRTABLE 配置 (token 已移到 Netlify Function 里，更安全)
 // ============================================================
-const AIRTABLE_TOKEN = "pate5XEuSM0tLC1vz.d80f1e0ea490adce86e675f8ae6c272b052b9ca320b060022343878da98eaefa";
-const AIRTABLE_BASE  = "apphfGx38pLpWBELJ";
-const AIRTABLE_TABLE = "tblpYsn8L3dLZ7Ete";
 const WA_NUMBER_GLOBAL = "60123456789"; // ← 改成你的 WA 号码
 
 // Category label map
@@ -958,38 +955,36 @@ const catLabels = {
 
 const emojis = ["💐","🌹","🌸","🌺","🎁","🎀","✨","💵","🍫","🌼"];
 
-// Fetch from Airtable
+// Fetch via Netlify Function (avoids CORS issue)
 async function fetchProducts() {
-  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}`;
+  const url = `/.netlify/functions/products`;
   try {
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
-    });
+    const res = await fetch(url);
     const data = await res.json();
     if (!data.records) return fallbackProducts;
     return data.records.map((r, i) => {
       const f = r.fields;
-      const cat = (f.category || 'fresh').toLowerCase();
+      const cat = String(f.category || 'fresh').toLowerCase();
       const imgArr = f.image || [];
       const imgUrl = imgArr.length ? imgArr[0].url : null;
       return {
         id: r.id,
-        name: f.name || "Unnamed",
-        nameEn: f.nameEn || "",
+        name: String(f.name || "Unnamed"),
+        nameEn: String(f.nameEn || ""),
         category: cat,
         categoryLabel: catLabels[cat] || cat,
         tag: f.tag || null,
         tagLabel: f.tag === "new" ? "New" : f.tag === "popular" ? "热门" : null,
-        price: f.price || "RM --",
-        oldPrice: f.oldPrice || null,
-        desc: f.description || "",
+        price: String(f.price || "RM --"),
+        oldPrice: f.oldPrice ? String(f.oldPrice) : null,
+        desc: String(f.description || ""),
         image: imgUrl,
         emoji: emojis[i % emojis.length],
         waMsg: `Hi! I'm interested in ${f.name} (${f.price}). Can I place an order?`
       };
     });
   } catch(e) {
-    console.warn("Airtable fetch failed, using demo data:", e);
+    console.warn("Fetch failed, using demo data:", e);
     return fallbackProducts;
   }
 }
