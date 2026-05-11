@@ -57,11 +57,14 @@ align-items: center;
 height: 52px;
 width: auto;
 object-fit: contain;
+background: transparent;
+border: none;
+mix-blend-mode: multiply;
 }
 
 nav {
 display: flex;
-gap: 36px;
+gap: 12px;
 align-items: center;
 }
 
@@ -78,17 +81,19 @@ font-weight: 400;
 nav a:hover { color: var(–rose); }
 
 .nav-cta {
-background: var(–charcoal) !important;
-color: var(–cream) !important;
-padding: 10px 24px !important;
+background: var(–rose) !important;
+color: white !important;
+padding: 9px 20px !important;
 border-radius: 50px;
-font-size: 12px !important;
-letter-spacing: 2px;
+font-size: 11px !important;
+letter-spacing: 1.5px;
 transition: background 0.2s !important;
 text-transform: uppercase;
+text-decoration: none !important;
+white-space: nowrap;
 }
 
-.nav-cta:hover { background: var(–rose) !important; }
+.nav-cta:hover { background: var(–deep-rose) !important; }
 
 /* HERO */
 .hero {
@@ -759,6 +764,47 @@ gap: 12px;
 
 .edit-notice strong { color: var(–rose); }
 
+/* SALE TAG */
+.card-tag.sale {
+background: #E8604C;
+color: white;
+}
+
+.sale-price {
+color: #E8604C !important;
+}
+
+.original-price {
+text-decoration: line-through;
+color: var(–muted) !important;
+font-size: 13px !important;
+font-family: ‘DM Sans’, sans-serif !important;
+margin-left: 6px;
+}
+
+/* COLOR SWATCHES */
+.color-swatches {
+display: flex;
+gap: 6px;
+margin-top: 8px;
+flex-wrap: wrap;
+}
+
+.color-swatch {
+width: 18px;
+height: 18px;
+border-radius: 50%;
+border: 2px solid white;
+box-shadow: 0 0 0 1.5px rgba(0,0,0,0.15);
+cursor: pointer;
+transition: transform 0.15s;
+}
+
+.color-swatch:hover, .color-swatch.active {
+transform: scale(1.25);
+box-shadow: 0 0 0 2px var(–rose);
+}
+
 /* WHATSAPP FLOAT */
 .wa-float {
 position: fixed;
@@ -836,12 +882,12 @@ color: var(–rose);
 
 <header>
   <div class="logo">
-    <img src="https://i.imgur.com/biD67nE.png" alt="By Flore" style="height:56px;width:auto;object-fit:contain;">
+    <img src="https://i.imgur.com/biD67nE.png" alt="By Flore" style="height:52px;width:auto;object-fit:contain;mix-blend-mode:multiply;background:transparent;">
   </div>
   <nav>
     <a href="#catalog">Catalog</a>
     <a href="#about">About</a>
-    <button onclick="toggleLang()" id="langBtn" style="background:var(--blush);border:none;border-radius:50px;padding:8px 16px;font-size:12px;letter-spacing:1px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;">EN / 中文</button>
+    <button onclick="toggleLang()" id="langBtn" style="background:var(--blush);border:none;border-radius:50px;padding:8px 14px;font-size:11px;letter-spacing:0.5px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;white-space:nowrap;line-height:1;">EN / 中文</button>
     <a href="https://wa.me/601110765097" target="_blank" class="nav-cta">Order Now</a>
   </nav>
 </header>
@@ -901,7 +947,7 @@ color: var(–rose);
   <div class="section-header">
     <div>
       <div class="section-label">NEW ARRIVALS</div>
-      <h2>最新 <em>花束</em></h2>
+      <h2 style="font-style:normal;">最新 花束</h2>
     </div>
   </div>
   <div class="product-grid" id="latestGrid"></div>
@@ -913,7 +959,7 @@ color: var(–rose);
   <div class="section-header">
     <div>
       <div class="section-label">BROWSE BY TYPE</div>
-      <h2>花束 <em>分类</em></h2>
+      <h2 style="font-style:normal;">花束 分类</h2>
     </div>
   </div>
   <div class="category-grid" id="categoryGrid"></div>
@@ -963,7 +1009,7 @@ color: var(–rose);
 
 <footer>
   <img src="https://i.imgur.com/biD67nE.png" alt="By Flore" style="height:70px;width:auto;margin-bottom:16px;filter:brightness(0) invert(1) opacity(0.8);">
-  <p>KL / JB · Order via WhatsApp · <a href="https://wa.me/601110765097">+60 12-345 6789</a></p>
+  <p>KL / JB · Order via WhatsApp · <a href="https://wa.me/601110765097">+60 11-1076 5097</a></p>
   <div class="footer-links">
     <a href="#">Instagram</a>
     <a href="#">Facebook</a>
@@ -1037,6 +1083,7 @@ async function fetchProducts() {
         oldPrice: p.oldPrice ? String(p.oldPrice) : null,
         desc: String(p.description || ""),
         image: p.imageUrl || null,
+        colors: p.colors || [],
         emoji: emojis[i % emojis.length],
         waMsg: "Hi! I'm interested in " + p.name + " (" + p.price + "). Can I place an order?"
       };
@@ -1207,6 +1254,25 @@ const catConfig = {
 function productCardHTML(p, i, featured) {
   featured = featured || false;
   const safeId = String(p.id).replace(/'/g, '');
+
+  // Sale tag logic
+  const isSale = p.oldPrice && p.oldPrice !== p.price;
+  const tagHtml = isSale
+    ? '<div class="card-tag sale">SALE</div>'
+    : (p.tag ? '<div class="card-tag ' + p.tag + '">' + p.tagLabel + '</div>' : '');
+
+  // Price display
+  const priceHtml = isSale
+    ? '<div class="card-price sale-price">' + p.price + '<span class="original-price">' + p.oldPrice + '</span></div>'
+    : '<div class="card-price">' + p.price + '</div>';
+
+  // Color swatches
+  const swatchHtml = p.colors && p.colors.length
+    ? '<div class="color-swatches">' + p.colors.map(function(c) {
+        return '<div class="color-swatch" style="background:' + c + ';" title="' + c + '"></div>';
+      }).join('') + '</div>'
+    : '';
+
   return `
     <div class="product-card ${featured ? 'featured' : ''}"
          data-id="${safeId}"
@@ -1216,18 +1282,16 @@ function productCardHTML(p, i, featured) {
           ? `<img src="${p.image}" alt="${p.name}" loading="lazy">`
           : `<div class="card-image-placeholder"><div class="flower-icon">${p.emoji}</div><p>Tap to view</p></div>`
         }
-        ${p.tag ? `<div class="card-tag ${p.tag}">${p.tagLabel}</div>` : ''}
+        ${tagHtml}
         <button class="card-wish" onclick="event.stopPropagation(); this.textContent = this.textContent==='🤍'?'🩷':'🤍'">🤍</button>
       </div>
       <div class="card-body">
         <div class="card-category">${p.categoryLabel}</div>
         <div class="card-name">${p.name}</div>
         <div class="card-desc">${String(p.desc||'').substring(0, 60)}...</div>
+        ${swatchHtml}
         <div class="card-footer">
-          <div class="card-price">
-            ${p.price}
-            ${p.oldPrice ? `<span>${p.oldPrice}</span>` : ''}
-          </div>
+          ${priceHtml}
           <span class="card-order">View →</span>
         </div>
       </div>
@@ -1314,6 +1378,27 @@ document.addEventListener('click', function(e) {
     openModal(id);
   }
 });
+
+
+// LANGUAGE TOGGLE
+var currentLang = "en";
+function toggleLang() {
+  currentLang = currentLang === "en" ? "zh" : "en";
+  var btn = document.getElementById("langBtn");
+  btn.textContent = currentLang === "en" ? "EN / 中文" : "中文 / EN";
+
+  var els = document.querySelectorAll("[data-en][data-zh]");
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i];
+    var val = currentLang === "zh" ? el.getAttribute("data-zh") : el.getAttribute("data-en");
+    var tag = el.tagName.toLowerCase();
+    if (tag === "h1" || tag === "h2" || tag === "p" || tag === "div") {
+      el.innerHTML = val;
+    } else {
+      el.textContent = val;
+    }
+  }
+}
 
 async function init() {
   document.getElementById('latestGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);"><div style="font-size:32px;margin-bottom:12px;">🌸</div><div style="font-size:13px;letter-spacing:2px;">Loading blooms...</div></div>';
