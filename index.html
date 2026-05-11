@@ -853,10 +853,13 @@ transition: transform 0.3s ease;
 <div class="filter-bar">
   <span class="filter-label">Filter :</span>
   <button class="filter-btn active" onclick="filterProducts('all', this)">全部 All</button>
-  <button class="filter-btn" onclick="filterProducts('fresh', this)">鲜花 Fresh</button>
-  <button class="filter-btn" onclick="filterProducts('soap', this)">香皂花 Soap</button>
-  <button class="filter-btn" onclick="filterProducts('gift', this)">礼盒 Gift Box</button>
-  <button class="filter-btn" onclick="filterProducts('special', this)">节日 Seasonal</button>
+  <button class="filter-btn" onclick="filterProducts('fresh', this)">鲜花</button>
+  <button class="filter-btn" onclick="filterProducts('soap', this)">香皂花</button>
+  <button class="filter-btn" onclick="filterProducts('preserved', this)">永生花</button>
+  <button class="filter-btn" onclick="filterProducts('money', this)">钱花</button>
+  <button class="filter-btn" onclick="filterProducts('snack', this)">零食花</button>
+  <button class="filter-btn" onclick="filterProducts('opening', this)">开张花</button>
+  <button class="filter-btn" onclick="filterProducts('seasonal', this)">节日限定</button>
 </div>
 
 <!-- CATALOG -->
@@ -935,52 +938,64 @@ transition: transform 0.3s ease;
 
 <script>
 // ============================================================
-// 🌸 SANITY 配置 — 把 YOUR_PROJECT_ID 换成你的 Project ID
+// 🌸 AIRTABLE 配置
 // ============================================================
-const SANITY_PROJECT_ID = "qmf6vimo";
-const SANITY_DATASET = "production";
+const AIRTABLE_TOKEN = "pate5XEuSM0tLC1vz.d80f1e0ea490adce86e675f8ae6c272b052b9ca320b060022343878da98eaefa";
+const AIRTABLE_BASE  = "apphfGx38pLpWBELJ";
+const AIRTABLE_TABLE = "tblpYsn8L3dLZ7Ete";
 const WA_NUMBER_GLOBAL = "60123456789"; // ← 改成你的 WA 号码
 
-// Sanity image URL helper
-function sanityImgUrl(ref) {
-  if (!ref) return null;
-  const [,id,dims,fmt] = ref.split('-');
-  return `https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${id}-${dims}.${fmt}`;
-}
-
 // Category label map
-const catLabels = { fresh:"鲜花", soap:"香皂花", gift:"礼盒", special:"节日限定" };
+const catLabels = {
+  fresh:     "鲜花",
+  soap:      "香皂花",
+  preserved: "永生花",
+  money:     "钱花",
+  snack:     "零食花",
+  opening:   "开张花",
+  seasonal:  "节日限定"
+};
 
-// Fetch from Sanity
+const emojis = ["💐","🌹","🌸","🌺","🎁","🎀","✨","💵","🍫","🌼"];
+
+// Fetch from Airtable
 async function fetchProducts() {
-  const query = encodeURIComponent(`*[_type == "product"] | order(_createdAt asc) {_id, name, nameEn, price, oldPrice, description, category, tag, "imageRef": image.asset._ref}`);
-  const url = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2023-01-01/data/query/${SANITY_DATASET}?query=${query}`;
+  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}`;
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
+    });
     const data = await res.json();
-    return (data.result || []).map((p, i) => ({
-      id: p._id,
-      name: p.name || "Unnamed",
-      nameEn: p.nameEn || "",
-      category: p.category || "fresh",
-      categoryLabel: catLabels[p.category] || p.category,
-      tag: p.tag || null,
-      tagLabel: p.tag === "new" ? "New" : p.tag === "popular" ? "热门" : null,
-      price: p.price || "RM --",
-      oldPrice: p.oldPrice || null,
-      desc: p.description || "",
-      image: p.imageRef ? sanityImgUrl(p.imageRef) : null,
-      emoji: ["💐","🌹","🍫","🌺","🎁","🎀","✨","💵","📅"][i % 9],
-      waMsg: `Hi! I'm interested in ${p.name} (${p.price}). Can I place an order?`
-    }));
+    if (!data.records) return fallbackProducts;
+    return data.records.map((r, i) => {
+      const f = r.fields;
+      const cat = (f.category || 'fresh').toLowerCase();
+      const imgArr = f.image || [];
+      const imgUrl = imgArr.length ? imgArr[0].url : null;
+      return {
+        id: r.id,
+        name: f.name || "Unnamed",
+        nameEn: f.nameEn || "",
+        category: cat,
+        categoryLabel: catLabels[cat] || cat,
+        tag: f.tag || null,
+        tagLabel: f.tag === "new" ? "New" : f.tag === "popular" ? "热门" : null,
+        price: f.price || "RM --",
+        oldPrice: f.oldPrice || null,
+        desc: f.description || "",
+        image: imgUrl,
+        emoji: emojis[i % emojis.length],
+        waMsg: `Hi! I'm interested in ${f.name} (${f.price}). Can I place an order?`
+      };
+    });
   } catch(e) {
-    console.warn("Sanity fetch failed, using demo data:", e);
+    console.warn("Airtable fetch failed, using demo data:", e);
     return fallbackProducts;
   }
 }
 
 // ============================================================
-// 🌸 DEMO DATA — 连接 Sanity 前先用这些展示
+// 🌸 DEMO DATA — Airtable 连接前先用这些展示
 // ============================================================
 const fallbackProducts = [
   {
@@ -1120,8 +1135,6 @@ const fallbackProducts = [
   }
 ];
 
-];
-
 // ============================================================
 // RENDER PRODUCTS
 // ============================================================
@@ -1213,26 +1226,16 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBt
 
 
 
-  el.addEventListener('mouseleave', () => { cursor.style.transform = 'scale(1)'; ring.style.transform = 'scale(1)'; });
-});
 
-// INIT — fetch from Sanity, fallback to demo data
+// INIT — fetch from Airtable, fallback to demo data
 async function init() {
-  // Show loading state
   document.getElementById('productGrid').innerHTML = `
     <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);">
-      <div style="font-size:32px;margin-bottom:12px;animation:float 1.5s ease-in-out infinite;">🌸</div>
+      <div style="font-size:32px;margin-bottom:12px;">🌸</div>
       <div style="font-size:13px;letter-spacing:2px;">Loading blooms...</div>
     </div>`;
-
-  if (SANITY_PROJECT_ID === "YOUR_PROJECT_ID") {
-    // No Sanity yet — use demo data
-    allProducts = fallbackProducts;
-  } else {
-    allProducts = await fetchProducts();
-    if (!allProducts.length) allProducts = fallbackProducts;
-  }
-
+  allProducts = await fetchProducts();
+  if (!allProducts.length) allProducts = fallbackProducts;
   renderProducts('all');
 }
 init();
