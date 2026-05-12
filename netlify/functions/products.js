@@ -1,54 +1,24 @@
 var https = require("https");
-
 exports.handler = function(event, context, callback) {
-
   var options = {
     hostname: "api.airtable.com",
     path: "/v0/apphfGx38pLpWBELJ/tblpYsn8L3dLZ7Ete",
     method: "GET",
     headers: {
-      Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}`,
-      "Content-Type": "application/json"
+      Authorization: "Bearer pate5XEuSM0tLC1vz.d80f1e0ea490adce86e675f8ae6c272b052b9ca320b060022343878da98eaefa"
     }
   };
-
   var body = "";
-
-  var req = https.request(options, function(res) {
-
-    res.on("data", function(chunk) {
-      body += chunk;
-    });
-
+  https.request(options, function(res) {
+    res.on("data", function(chunk) { body += chunk; });
     res.on("end", function() {
-
       callback(null, {
-        statusCode: res.statusCode,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json"
-        },
+        statusCode: 200,
+        headers: { "Access-Control-Allow-Origin": "*" },
         body: body
       });
-
     });
-
-  });
-
-  req.on("error", function(err) {
-
-    callback(null, {
-      statusCode: 500,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        error: err.message
-      })
-    });
-
-  });
-
-  req.end();
-
+  }).on("error", function(err) {
+    callback(null, { statusCode: 500, body: err.message });
+  }).end();
 };
