@@ -81,19 +81,21 @@ font-weight: 400;
 nav a:hover { color: var(–rose); }
 
 .nav-cta {
-background: var(–rose) !important;
-color: white !important;
-padding: 9px 20px !important;
+background: var(–charcoal) !important;
+color: var(–cream) !important;
+padding: 8px 14px !important;
 border-radius: 50px;
 font-size: 11px !important;
-letter-spacing: 1.5px;
-transition: background 0.2s !important;
+letter-spacing: 0.5px;
+transition: all 0.2s !important;
 text-transform: uppercase;
 text-decoration: none !important;
 white-space: nowrap;
+line-height: 1;
+border: none;
 }
 
-.nav-cta:hover { background: var(–deep-rose) !important; }
+.nav-cta:hover { background: var(–rose) !important; }
 
 /* HERO */
 .hero {
@@ -575,10 +577,11 @@ inset: 0;
 background: rgba(42,34,32,0.7);
 z-index: 200;
 display: none;
-align-items: center;
+align-items: flex-start;
 justify-content: center;
-padding: 24px;
+padding: 16px;
 backdrop-filter: blur(8px);
+overflow-y: auto;
 }
 
 .modal-overlay.open { display: flex; }
@@ -601,21 +604,20 @@ from { opacity: 0; transform: scale(0.92) translateY(20px); }
 to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
 .modal {
 grid-template-columns: 1fr;
 border-radius: 24px;
+margin-top: 8px;
+margin-bottom: 24px;
+width: 100%;
+}
+.modal-image {
+border-radius: 24px 24px 0 0 !important;
+aspect-ratio: 4/3 !important;
 }
 .modal-info {
-padding: 20px 24px 32px;
-}
-.modal-close {
-position: absolute;
-top: 12px;
-right: 12px;
-z-index: 10;
-background: rgba(255,255,255,0.95);
-box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+padding: 16px 20px 32px;
 }
 }
 
@@ -656,6 +658,12 @@ font-size: 80px;
 padding: 40px 36px;
 display: flex;
 flex-direction: column;
+background: #2A2220;
+border-radius: 0 32px 32px 0;
+}
+
+@media (max-width: 700px) {
+.modal-info { border-radius: 0 0 24px 24px !important; }
 }
 
 .modal-close {
@@ -680,22 +688,22 @@ transition: all 0.2s;
 font-size: 10px;
 letter-spacing: 4px;
 text-transform: uppercase;
-color: var(–rose);
+color: var(–blush);
 margin-bottom: 8px;
 }
 
 .modal-name {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 36px;
-font-weight: 300;
-color: var(–charcoal);
+font-family: ‘Gowun Batang’, ‘Cormorant Garamond’, serif;
+font-size: 32px;
+font-weight: 400;
+color: white;
 margin-bottom: 12px;
-line-height: 1.1;
+line-height: 1.2;
 }
 
 .modal-desc {
 font-size: 14px;
-color: var(–muted);
+color: rgba(255,255,255,0.7);
 line-height: 1.8;
 margin-bottom: 24px;
 flex: 1;
@@ -704,9 +712,13 @@ flex: 1;
 .modal-price {
 font-family: ‘Cormorant Garamond’, serif;
 font-size: 40px;
-color: var(–charcoal);
+color: var(–blush);
 margin-bottom: 24px;
 font-weight: 300;
+}
+
+.modal-note {
+color: rgba(255,255,255,0.4) !important;
 }
 
 .modal-wa {
@@ -827,6 +839,80 @@ transition: transform 0.15s;
 transform: scale(1.25);
 box-shadow: 0 0 0 2px var(–rose);
 }
+
+/* SLIDESHOW */
+.slideshow {
+position: relative;
+width: 100%;
+height: 100%;
+overflow: hidden;
+}
+
+.slide {
+position: absolute;
+inset: 0;
+opacity: 0;
+transition: opacity 0.5s ease;
+}
+
+.slide.active {
+opacity: 1;
+position: relative;
+}
+
+.slide img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.slide-dots {
+position: absolute;
+bottom: 10px;
+left: 50%;
+transform: translateX(-50%);
+display: flex;
+gap: 6px;
+z-index: 5;
+}
+
+.slide-dot {
+width: 6px;
+height: 6px;
+border-radius: 50%;
+background: rgba(255,255,255,0.5);
+cursor: pointer;
+transition: all 0.2s;
+border: none;
+padding: 0;
+}
+
+.slide-dot.active {
+background: white;
+width: 18px;
+border-radius: 3px;
+}
+
+.slide-arrow {
+position: absolute;
+top: 50%;
+transform: translateY(-50%);
+background: rgba(255,255,255,0.8);
+border: none;
+width: 28px;
+height: 28px;
+border-radius: 50%;
+cursor: pointer;
+z-index: 5;
+font-size: 12px;
+display: flex;
+align-items: center;
+justify-content: center;
+backdrop-filter: blur(4px);
+}
+
+.slide-arrow.prev { left: 8px; }
+.slide-arrow.next { right: 8px; }
 
 /* WHATSAPP FLOAT */
 .wa-float {
@@ -970,7 +1056,7 @@ color: var(–rose);
   <div class="section-header">
     <div>
       <div class="section-label">NEW ARRIVALS</div>
-      <h2 style="font-style:normal;">最新 花束</h2>
+      <h2 style="font-style:normal;" data-en="Latest Blooms" data-zh="最新 花束">Latest Blooms</h2>
     </div>
   </div>
   <div class="product-grid" id="latestGrid"></div>
@@ -982,7 +1068,7 @@ color: var(–rose);
   <div class="section-header">
     <div>
       <div class="section-label">BROWSE BY TYPE</div>
-      <h2 style="font-style:normal;">花束 分类</h2>
+      <h2 style="font-style:normal;" data-en="Browse by Type" data-zh="花束 分类">Browse by Type</h2>
     </div>
   </div>
   <div class="category-grid" id="categoryGrid"></div>
@@ -1046,7 +1132,7 @@ color: var(–rose);
 
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
   <div class="modal" id="modal">
-    <button class="modal-close" onclick="closeModalBtn()" style="position:absolute;top:16px;right:16px;z-index:20;background:rgba(255,255,255,0.95);border:none;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#7A6360;box-shadow:0 2px 8px rgba(0,0,0,0.15);">✕</button>
+    <button class="modal-close" onclick="closeModalBtn()" id="modalCloseBtn" style="position:fixed;top:16px;right:16px;z-index:300;background:rgba(42,34,32,0.9);border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:white;box-shadow:0 4px 16px rgba(0,0,0,0.3);backdrop-filter:blur(4px);">✕</button>
     <div class="modal-image" id="modalImage" style="position:relative;overflow:hidden;">
       <div class="modal-image-placeholder" id="modalPlaceholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"></div>
     </div>
@@ -1106,6 +1192,7 @@ async function fetchProducts() {
         oldPrice: p.oldPrice ? String(p.oldPrice) : null,
         desc: String(p.description || ""),
         image: p.imageUrl || null,
+        images: p.images || (p.imageUrl ? [p.imageUrl] : []),
         colors: p.colors || [],
         emoji: emojis[i % emojis.length],
         waMsg: "Hi! I'm interested in " + p.name + " (" + p.price + "). Can I place an order?"
@@ -1264,14 +1351,14 @@ const fallbackProducts = [
 let allProducts = [];
 
 const catConfig = {
-  fresh:      { label: "鲜花",    icon: "💐", en: "Fresh Flowers" },
-  preserved:  { label: "永生花",  icon: "🌸", en: "Preserved Flowers" },
-  soap:       { label: "香皂花",  icon: "🌹", en: "Soap Rose" },
-  snack:      { label: "零食花",  icon: "🍫", en: "Snack Bouquet" },
-  money:      { label: "钱花",    icon: "💵", en: "Money Bouquet" },
-  opening:    { label: "开张花",  icon: "🌺", en: "Grand Opening" },
-  decoration: { label: "场地布置", icon: "🎪", en: "Venue Decoration" },
-  seasonal:   { label: "节日限定", icon: "✨", en: "Seasonal Special" }
+  fresh:      { label: "鲜花",    labelEn: "Fresh Flowers",       icon: "💐", en: "Fresh Flowers" },
+  preserved:  { label: "永生花",  labelEn: "Preserved Flowers",   icon: "🌸", en: "Preserved Flowers" },
+  soap:       { label: "香皂花",  labelEn: "Soap Rose",           icon: "🌹", en: "Soap Rose" },
+  snack:      { label: "零食花",  labelEn: "Snack Bouquet",       icon: "🍫", en: "Snack Bouquet" },
+  money:      { label: "钱花",    labelEn: "Money Bouquet",       icon: "💵", en: "Money Bouquet" },
+  opening:    { label: "开张花",  labelEn: "Grand Opening",       icon: "🌺", en: "Grand Opening" },
+  decoration: { label: "场地布置", labelEn: "Venue Decoration",   icon: "🎪", en: "Venue Decoration" },
+  seasonal:   { label: "节日限定", labelEn: "Seasonal Special",   icon: "✨", en: "Seasonal Special" }
 };
 
 function productCardHTML(p, i, featured) {
@@ -1309,9 +1396,9 @@ function productCardHTML(p, i, featured) {
         <button class="card-wish" onclick="event.stopPropagation(); this.textContent = this.textContent==='🤍'?'🩷':'🤍'">🤍</button>
       </div>
       <div class="card-body">
-        <div class="card-category">${p.categoryLabel}</div>
-        <div class="card-name">${p.name}</div>
-        <div class="card-desc">${String(p.desc||'').substring(0, 60)}...</div>
+        <div class="card-category">${currentLang === 'zh' ? p.categoryLabel : (catConfig[p.category] ? catConfig[p.category].labelEn : p.categoryLabel)}</div>
+        <div class="card-name">${currentLang === 'zh' ? p.name : (p.nameEn || p.name)}</div>
+        <div class="card-desc">${String(currentLang === 'zh' ? (p.desc||'') : (p.descEn || p.desc||'')).substring(0, 60)}...</div>
         ${swatchHtml}
         <div class="card-footer">
           ${priceHtml}
@@ -1334,12 +1421,15 @@ function renderCategories() {
     const count = allProducts.filter(function(p){ return p.category === cat; }).length;
     if (!count) return '';
     const c = catConfig[cat];
-    return `<div class="cat-card" onclick="openCategory('${cat}')">
-      <div class="cat-icon">${c.icon}</div>
-      <div class="cat-name">${c.label}</div>
-      <div class="cat-count">${count} items</div>
-      <div class="cat-arrow">Browse →</div>
-    </div>`;
+    const displayLabel = currentLang === 'zh' ? c.label : c.labelEn;
+    const browseText = currentLang === 'zh' ? '浏览 →' : 'Browse →';
+    const itemText = count + (currentLang === 'zh' ? ' 款' : ' items');
+    return '<div class="cat-card" onclick="openCategory(\'' + cat + '\')">' +
+      '<div class="cat-icon">' + c.icon + '</div>' +
+      '<div class="cat-name">' + displayLabel + '</div>' +
+      '<div class="cat-count">' + itemText + '</div>' +
+      '<div class="cat-arrow">' + browseText + '</div>' +
+    '</div>';
   }).join('');
 }
 
@@ -1363,6 +1453,9 @@ function closeFilter() {
   document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' });
 }
 
+var currentSlide = 0;
+var slideImages = [];
+
 function openModal(id) {
   const p = allProducts.find(function(x){ return String(x.id) === String(id); });
   if (!p) return;
@@ -1370,17 +1463,50 @@ function openModal(id) {
   document.getElementById('modalName').textContent = p.name;
   document.getElementById('modalDesc').textContent = p.desc;
   document.getElementById('modalPrice').textContent = p.price;
+
   const phEl = document.getElementById('modalPlaceholder');
-  if (p.image) {
-    phEl.innerHTML = '<img src="' + p.image + '" alt="' + p.name + '" style="width:100%;height:100%;object-fit:cover;">';
+  slideImages = p.images && p.images.length ? p.images : (p.image ? [p.image] : []);
+  currentSlide = 0;
+
+  if (slideImages.length > 1) {
+    // Slideshow
+    var dotsHtml = slideImages.map(function(_, i) {
+      return '<button class="slide-dot ' + (i===0?'active':'') + '" onclick="goSlide(' + i + ')"></button>';
+    }).join('');
+    phEl.innerHTML =
+      '<div class="slideshow" id="slideshow">' +
+        slideImages.map(function(src, i) {
+          return '<div class="slide ' + (i===0?'active':'') + '"><img src="' + src + '" alt="photo ' + (i+1) + '"></div>';
+        }).join('') +
+        '<button class="slide-arrow prev" onclick="prevSlide()">‹</button>' +
+        '<button class="slide-arrow next" onclick="nextSlide()">›</button>' +
+        '<div class="slide-dots">' + dotsHtml + '</div>' +
+      '</div>';
+  } else if (slideImages.length === 1) {
+    phEl.innerHTML = '<img src="' + slideImages[0] + '" alt="' + p.name + '" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">';
   } else {
     phEl.innerHTML = '<span style="font-size:80px">' + p.emoji + '</span>';
   }
+
   const waLink = 'https://wa.me/' + WA_NUMBER_GLOBAL + '?text=' + encodeURIComponent(p.waMsg);
   document.getElementById('modalWa').href = waLink;
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
+
+function goSlide(n) {
+  var slides = document.querySelectorAll('.slide');
+  var dots = document.querySelectorAll('.slide-dot');
+  if (!slides.length) return;
+  slides[currentSlide].classList.remove('active');
+  dots[currentSlide].classList.remove('active');
+  currentSlide = (n + slides.length) % slides.length;
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+}
+
+function nextSlide() { goSlide(currentSlide + 1); }
+function prevSlide() { goSlide(currentSlide - 1); }
 
 function closeModal(e) {
   if (e.target === document.getElementById('modalOverlay')) closeModalBtn();
@@ -1410,6 +1536,7 @@ function toggleLang() {
   var btn = document.getElementById("langBtn");
   btn.textContent = currentLang === "en" ? "EN / 中文" : "中文 / EN";
 
+  // Update static data-en/data-zh elements
   var els = document.querySelectorAll("[data-en][data-zh]");
   for (var i = 0; i < els.length; i++) {
     var el = els[i];
@@ -1421,6 +1548,21 @@ function toggleLang() {
       el.textContent = val;
     }
   }
+
+  // Update section titles (keep NEW ARRIVALS always in EN)
+  var latestTitle = document.querySelector('#catalog h2');
+  if (latestTitle) latestTitle.textContent = currentLang === 'zh' ? '最新 花束' : '最新 花束';
+  var catTitle = document.querySelector('#categoriesSection h2');
+  if (catTitle) catTitle.textContent = currentLang === 'zh' ? '花束 分类' : 'Browse by Type';
+  var aboutTitle = document.querySelector('#about h2');
+
+  // Re-render dynamic product cards and categories with correct language
+  renderLatest();
+  renderCategories();
+
+  // Update browse catalog button
+  var browseBtn = document.querySelector('a[href="#catalog"].btn-primary');
+  if (browseBtn) browseBtn.textContent = currentLang === 'zh' ? '浏览花束' : 'Browse Catalog';
 }
 
 async function init() {
