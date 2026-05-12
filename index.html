@@ -1174,7 +1174,7 @@ const emojis = ["💐","🌹","🌸","🌺","🎁","🎀","✨","💵","🍫","�
 
 async function fetchProducts() {
   try {
-    var res = await fetch("/api/products");
+    var res = await fetch("/api/product");
     var data = await res.json();
     if (!data.records) return fallbackProducts;
     return data.records.filter(function(r){ return r.fields && r.fields.name; }).map(function(r, i) {
