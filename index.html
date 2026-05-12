@@ -1165,6 +1165,7 @@ const catLabels = {
   money:      "钱花",
   snack:      "零食花",
   opening:    "开张花",
+  birthday:   "生日花",
   decoration: "场地布置",
   seasonal:   "节日限定"
 };
@@ -1217,8 +1218,8 @@ async function fetchProducts() {
 const fallbackProducts = [
   {
     id: 1,
-    name: "母亲节花束",
-    nameEn: "Mother's Bouquet",
+    name: "520 香皂玫瑰花束",
+    nameEn: "520 Soap Rose Bouquet",
     category: "special",
     categoryLabel: "节日限定",
     tag: "popular",
@@ -1359,6 +1360,7 @@ let allProducts = [];
 
 const catConfig = {
   fresh:      { label: "鲜花",    labelEn: "Fresh Flowers",       icon: "💐", en: "Fresh Flowers" },
+  birthday:   { label: "生日花",   labelEn: "Birthday Bouquet",    icon: "🎀", en: "Birthday Bouquet" },
   preserved:  { label: "永生花",  labelEn: "Preserved Flowers",   icon: "🌸", en: "Preserved Flowers" },
   soap:       { label: "香皂花",  labelEn: "Soap Rose",           icon: "🌹", en: "Soap Rose" },
   snack:      { label: "零食花",  labelEn: "Snack Bouquet",       icon: "🍫", en: "Snack Bouquet" },
