@@ -1066,7 +1066,11 @@ color: var(–rose);
     <option value="all">💰 All Prices</option>
     <option value="0-100">RM 0 - 100</option>
     <option value="100-200">RM 100 - 200</option>
-    <option value="200-999">RM 200+</option>
+    <option value="200-300">RM 200 - 300</option>
+    <option value="300-400">RM 300 - 400</option>
+    <option value="400-500">RM 400 - 500</option>
+    <option value="500-600">RM 500 - 600</option>
+    <option value="600-9999">RM 600+</option>
   </select>
   <select id="sortFilter" onchange="applyFilters()" style="padding:9px 18px;border-radius:50px;border:1.5px solid rgba(201,132,142,0.25);background:white;font-size:12px;color:#7A6360;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;">
     <option value="default">↕ Sort</option>
@@ -1604,8 +1608,9 @@ function toggleLang() {
 // FILTERS
 // ============================================================
 function getPrice(priceStr) {
-  var match = String(priceStr || "").match(/[\d.]+/);
-  return match ? parseFloat(match[0]) : 0;
+  var s = String(priceStr || "").replace(/[^0-9.]/g, "");
+  var val = parseFloat(s);
+  return isNaN(val) ? 0 : val;
 }
 
 function applyFilters() {
