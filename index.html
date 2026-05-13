@@ -1435,7 +1435,7 @@ function productCardHTML(p, i, featured) {
       </div>
       <div class="card-body">
         <div class="card-category">${currentLang === 'zh' ? p.categoryLabel : (catConfig[p.category] ? catConfig[p.category].labelEn : p.categoryLabel)}</div>
-        <div class="card-name">${currentLang === 'zh' ? p.name : (p.nameEn || p.name)}</div>
+        <div class="card-name">${currentLang === 'zh' ? p.name : (p.nameEn && p.nameEn !== p.name && p.nameEn.trim() ? p.nameEn : p.name)}</div>
         <div class="card-desc">${String(currentLang === 'zh' ? (p.desc||'') : (p.descEn || p.desc||'')).substring(0, 60)}...</div>
         ${swatchHtml}
         <div class="card-footer">
@@ -1645,10 +1645,11 @@ function applyFilters() {
   }
 
   // Show reset button if any filter active
-  resetBtn.style.display = (cat !== 'all' || price !== 'all' || sort !== 'default') ? 'block' : 'none';
+  var isFiltered = cat !== 'all' || price !== 'all' || sort !== 'default';
+  resetBtn.style.display = isFiltered ? 'block' : 'none';
 
-  // Hide latest + categories, show filtered
-  if (cat !== 'all' || price !== 'all') {
+  // Always show filtered view if any filter/sort active
+  if (isFiltered) {
     document.getElementById('catalog').style.display = 'none';
     document.getElementById('categoriesSection').style.display = 'none';
     document.getElementById('filteredSection').style.display = 'block';
