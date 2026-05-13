@@ -1047,6 +1047,36 @@ color: var(–rose);
   </div>
 </div>
 
+<!-- FILTER BAR -->
+
+<div id="filterBar" style="padding:0 48px 32px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+  <select id="categoryFilter" onchange="applyFilters()" style="padding:9px 18px;border-radius:50px;border:1.5px solid rgba(201,132,142,0.25);background:white;font-size:12px;color:#7A6360;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;">
+    <option value="all">🌸 All Types</option>
+    <option value="fresh">💐 鲜花</option>
+    <option value="soap">🌹 香皂花</option>
+    <option value="preserved">🌸 永生花</option>
+    <option value="money">💵 钱花</option>
+    <option value="snack">🍫 零食花</option>
+    <option value="opening">🌺 开张花</option>
+    <option value="birthday">🎀 生日花</option>
+    <option value="decoration">🎪 场地布置</option>
+    <option value="seasonal">✨ 节日限定</option>
+  </select>
+  <select id="priceFilter" onchange="applyFilters()" style="padding:9px 18px;border-radius:50px;border:1.5px solid rgba(201,132,142,0.25);background:white;font-size:12px;color:#7A6360;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;">
+    <option value="all">💰 All Prices</option>
+    <option value="0-100">RM 0 - 100</option>
+    <option value="100-200">RM 100 - 200</option>
+    <option value="200-999">RM 200+</option>
+  </select>
+  <select id="sortFilter" onchange="applyFilters()" style="padding:9px 18px;border-radius:50px;border:1.5px solid rgba(201,132,142,0.25);background:white;font-size:12px;color:#7A6360;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;">
+    <option value="default">↕ Sort</option>
+    <option value="price-low">Price: Low to High</option>
+    <option value="price-high">Price: High to Low</option>
+    <option value="new">Newest First</option>
+  </select>
+  <button onclick="resetFilters()" id="resetBtn" style="display:none;padding:9px 18px;border-radius:50px;border:none;background:var(--rose);color:white;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">✕ Reset</button>
+</div>
+
 <!-- LATEST 5 -->
 
 <div class="catalog-section" id="catalog">
@@ -1193,7 +1223,7 @@ async function fetchProducts() {
         price: String(f.price || "RM --"),
         oldPrice: f.oldPrice ? String(f.oldPrice) : null,
         desc: String(desc.replace(/\n/g, " ").trim()),
-        descEn: String(f.descriptionEn || ""),
+        descEn: String(f.descriptionEn || f.description_en || ""),
         image: imgs[0] || null,
         images: imgs,
         colors: colors,
@@ -1464,8 +1494,8 @@ function openModal(id) {
   const p = allProducts.find(function(x){ return String(x.id) === String(id); });
   if (!p) return;
   document.getElementById('modalCat').textContent = p.categoryLabel;
-  document.getElementById('modalName').textContent = p.name;
-  document.getElementById('modalDesc').textContent = p.desc;
+  document.getElementById('modalName').textContent = currentLang === 'en' ? (p.nameEn || p.name) : p.name;
+  document.getElementById('modalDesc').textContent = currentLang === 'en' ? (p.descEn || p.desc) : p.desc;
   document.getElementById('modalPrice').textContent = p.price;
 
   const phEl = document.getElementById('modalPlaceholder');
@@ -1567,6 +1597,81 @@ function toggleLang() {
   // Update browse catalog button
   var browseBtn = document.querySelector('a[href="#catalog"].btn-primary');
   if (browseBtn) browseBtn.textContent = currentLang === 'zh' ? '浏览花束' : 'Browse Catalog';
+}
+
+
+// ============================================================
+// FILTERS
+// ============================================================
+function getPrice(priceStr) {
+  var match = String(priceStr || "").match(/[\d.]+/);
+  return match ? parseFloat(match[0]) : 0;
+}
+
+function applyFilters() {
+  var cat = document.getElementById('categoryFilter').value;
+  var price = document.getElementById('priceFilter').value;
+  var sort = document.getElementById('sortFilter').value;
+  var resetBtn = document.getElementById('resetBtn');
+
+  var filtered = allProducts.slice();
+
+  // Category filter
+  if (cat !== 'all') {
+    filtered = filtered.filter(function(p) { return p.category === cat; });
+  }
+
+  // Price filter
+  if (price !== 'all') {
+    var parts = price.split('-');
+    var min = parseFloat(parts[0]);
+    var max = parseFloat(parts[1]);
+    filtered = filtered.filter(function(p) {
+      var pv = getPrice(p.price);
+      return pv >= min && pv <= max;
+    });
+  }
+
+  // Sort
+  if (sort === 'price-low') {
+    filtered.sort(function(a, b) { return getPrice(a.price) - getPrice(b.price); });
+  } else if (sort === 'price-high') {
+    filtered.sort(function(a, b) { return getPrice(b.price) - getPrice(a.price); });
+  }
+
+  // Show reset button if any filter active
+  resetBtn.style.display = (cat !== 'all' || price !== 'all' || sort !== 'default') ? 'block' : 'none';
+
+  // Hide latest + categories, show filtered
+  if (cat !== 'all' || price !== 'all') {
+    document.getElementById('catalog').style.display = 'none';
+    document.getElementById('categoriesSection').style.display = 'none';
+    document.getElementById('filteredSection').style.display = 'block';
+    document.getElementById('filteredLabel').textContent = 'FILTERED RESULTS';
+    document.getElementById('filteredTitle').textContent = filtered.length + ' items found';
+    document.getElementById('itemCount').textContent = '';
+    document.getElementById('productGrid').innerHTML = filtered.map(function(p, i) {
+      return productCardHTML(p, i, false);
+    }).join('');
+  } else {
+    document.getElementById('catalog').style.display = 'block';
+    document.getElementById('categoriesSection').style.display = 'block';
+    document.getElementById('filteredSection').style.display = 'none';
+    renderLatest();
+    renderCategories();
+  }
+}
+
+function resetFilters() {
+  document.getElementById('categoryFilter').value = 'all';
+  document.getElementById('priceFilter').value = 'all';
+  document.getElementById('sortFilter').value = 'default';
+  document.getElementById('resetBtn').style.display = 'none';
+  document.getElementById('catalog').style.display = 'block';
+  document.getElementById('categoriesSection').style.display = 'block';
+  document.getElementById('filteredSection').style.display = 'none';
+  renderLatest();
+  renderCategories();
 }
 
 async function init() {
